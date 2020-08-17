@@ -1,0 +1,187 @@
+html,body{
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+.bg{
+    width: 100%;
+    height: 100%;
+    background: url("../img/bg.jpg") no-repeat;
+    background-position: 0;
+    background-size: cover;
+}
+.main{
+    position: relative;
+    margin: 0 auto;
+    top: 50%;
+    padding: 0;
+    top: 0;
+    width: 60%;
+    height: 100%;
+}
+.dialog{
+    position: relative;
+    height: 90%;
+    top: 50%;
+    transform: translateY(-48%);
+    width: 60%;
+    padding-left: 2%;
+    padding-right: 2%;
+    left: 18%;
+    background-color: antiquewhite;
+    border-radius: 50px;
+}
+.leftear{
+    position: absolute;
+    height: 14%;
+    width: 14%;
+    top: 2%;
+    left: 12%;
+    z-index: 5;
+    transform:rotate(-15deg);
+    -webkit-transform:rotate(-15deg); 
+}
+.rightear{
+    position: absolute;
+    height: 14%;
+    width: 14%;
+    top: 2%;
+    right: 12%;
+    z-index: 5;
+    transform:rotate(15deg);
+    -webkit-transform:rotate(15deg); 
+}
+.title{
+    position: relative;
+    top: 2%;
+    height: 8%;
+
+    font-family: YouYuan;
+    font-size: 30px;
+    text-align: center;
+}
+
+.talk_frame{
+    position: relative;
+    margin-top: 2%;
+    width: auto;
+    height: 64%;
+    /* background-color: darkgreen; */
+    border-radius: 5% 0 0 5%;
+    overflow-y: auto;
+    background: url("../img/chatbg.jpg");
+    background-position: 0;
+}
+.scorll::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width : 15px;  /*高宽分别对应横竖滚动条的尺寸*/
+    height: 2px;
+}
+.scorll::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    box-shadow   : inset 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background   : #ededed;
+}
+.scorll ::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width : 10px;  /*高宽分别对应横竖滚动条的尺寸*/
+    height: 1px;
+}
+.scorll::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius   : 10px;
+    background-color: skyblue;
+    background-image: -webkit-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%,
+        transparent
+);
+}
+
+.send_frame{
+    position: relative;
+    height: 27%;
+    margin-top: 2%;
+
+
+}
+
+.input_area{
+    position: relative;
+    height: 70%;
+    width: 100%;
+    border-radius: 10px;
+    font-family: KaiTi_GB2312;
+    font-size: large;
+}
+
+.sendBtn{
+    position: absolute;
+    bottom: 5%;
+    width: 22%;
+    height: 30%;
+    background-size: 100%;
+    transform:rotate(-12deg);
+    -webkit-transform:rotate(-12deg); 
+}
+.sendImgBtn{
+    position: absolute;
+    bottom: 5%;
+    right: 0;
+    width: 22%;
+    height: 30%;
+    background-size: 100%;
+    transform:rotate(12deg);
+    -webkit-transform:rotate(12deg); 
+}
+.user{
+    /* position: relative; */
+    margin: 10px;
+    right: 0;
+    text-align: right;
+}
+.user span{
+    border: 1px solid aliceblue;
+    border-radius: 15px;
+    display: inline-block;
+    background-color: #fff;
+    padding: 5px 10px;
+}
+.user input{
+    border: 1px solid aliceblue;
+    border-radius: 15px;
+    display: inline-block;
+    background-color: #fff;
+    padding: 5px 10px;
+    width: 100px;
+    height: 100px;
+}
+.bot{
+    margin: 10px;
+    left: 0;
+}
+.bot span{
+    padding: 3px 10px;
+    border: 1px solid aliceblue;
+    background-color: #fff;
+    border-radius: 15px;
+    display: inline-block;
+}
+.showBtn{
+    position: absolute;
+    top: 2%;
+    left: 2%;
+    opacity: 60%;
+    cursor: pointer;
+    /* background-color: transparent; */
+}
+.showBtn:hover{
+    opacity: 100%;
+}

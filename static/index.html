@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <title>聊天机器人</title>
+    <link type="text/css" rel="styleSheet" href="css/index.css">
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="layui/layui.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="assets/waifu.css"/>
+</head>
+<body>
+    <div class="bg" id="app">
+        <span class="layui-icon layui-icon-app showBtn" 
+        style="font-size: 50px; color: rgb(253, 253, 253);" title="展开"
+        @click="show"></span>
+        <transition enter-active-class="layui-anim-scale" leave-active-class="layui-anim-fadeout" :duration="{enter:400, leave:200}">
+        <div class="main layui-anim "  v-show="show_flag">
+            <input type="image" src="img/left.png" class="leftear" title="切换图片注入对话或图片描述" @click="imgModeChange">
+            <input type="image" src="img/right.png" class="rightear" @click="changeMode" title="更换对话模式">
+            <input class="sendBtn" type="image" src="img/catbtn.png" title="发送" @click="sendMessage">
+            <div class="dialog">
+                <div class="title">哟，爱博，拉面一库贼</div>
+                <div class="talk_frame scorll" ref="chat">
+                    <div v-for="item in messageList" :key="item.id" :class="item.flag=='0'?'user layui-anim layui-anim-up':'bot layui-anim layui-anim-up' ">
+                        <span v-if="!item.isImg">{{item.message}}</span>
+                        <input type="image" v-if="item.isImg" :src="item.src" disabled="disabled">
+                    </div>
+                </div>
+                <div class="send_frame">
+                    <textarea class="input_area" v-model="inputMessage" id="inputarea" @keyup.enter="sendMessage"></textarea>                    
+                </div>
+            </div>           
+            <input class="sendImgBtn" type="image" src="img/catbtn.png" title="发送图片" @click="sendImg">
+            <input ref="openfile" type="file" accept="image/*" style="display: none" @change="imgChange($event)">
+        </div>
+        </transition>
+    </div>
+
+    <script>
+        axios.defaults.withCredentials=true
+        axios.defaults.crossDomain=true
+        axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
+        var vm = new Vue({
+            el:'#app',
+            data:{
+                inputMessage:"",
+                show_flag:true,
+                messageList:[{
+                    flag:1,
+                    message:"和我说说话嘛 QwQ",
+                    isImg:false,
+                    flask_url:'',
+                    dialog_mode:'',
+                    img_mode: 0  //0:图片描述，1:图片注入对话模型
+                }]
+            },
+            methods:{
+                sendMessage:function(){
+                    console.log("input"+this.inputMessage)
+                    if (this.inputMessage == "" || this.inputMessage=='\n'){
+                        
+                        layui.use('layer', function(){
+                            var layer = layui.layer;
+                            layer.alert('消息不能为空', {icon: 0,
+                                yes:function(index, layero){
+                                document.getElementById('inputarea').focus()
+                                layer.close(index)
+                            }} );
+                        });
+                        this.inputMessage=""
+                        console.log("empty")
+                        return
+                    }else{
+                        this.messageList.push({flag:0,message:this.inputMessage,isImg:false})
+                        this.msgtoback()
+                        this.inputMessage=''
+                    }
+                    
+                },
+                sendImg:function(){
+                    this.$refs.openfile.dispatchEvent(new MouseEvent('click'))
+                },
+                imgModeChange:function(){
+                  if (this.img_mode == 1){
+                      this.img_mode=0
+                      layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('切换为图片描述', {icon: 1});
+                        });
+                  }else {
+                      this.img_mode=1
+                      layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('切换为图片注入对话模型', {icon: 1});
+                        });
+                  }
+                },
+                imgChange:function(e){
+                    var file = this.$refs.openfile.files[0]   //从隐藏input中获取img
+                    var that = this
+                    function makesureImg(file) {
+                        if(/\.(jpe?g|png|gif)$/i.test(file.name)){
+                            var reader = new FileReader()
+                            reader.readAsDataURL(file)  // 转换图片地址
+                            reader.onload = function () {
+                                that.messageList.push({flag: 0,src: this.result,isImg: true})
+                            }
+
+                        }else {
+                            layui.use('layer', function(){
+                                let layer = layui.layer;
+                                layer.alert('上传文件不是图片格式(jpeg,jpg,png...)', {icon: 2});
+                            });
+                        }
+                    }
+                    makesureImg(file)
+                    if (file === null){
+                        return
+                    }
+                    that.uploadImg(file)
+                    this.$refs.openfile.value = null  // 解决@change不能连续上传同一图片情况
+                },
+                uploadImg:function(file){
+                    let data = new FormData()
+                    data.append('type','img')
+                    data.append('img',file)
+                    data.append('name', file.name)
+                    data.append('mode', this.img_mode)
+                    let imgUrl = this.flask_url+'/img'
+                    console.log(imgUrl)
+                    axios.post(imgUrl, data, {timeout:60000})
+                        .catch((error) => {
+                        layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('网络开小差了', {icon: 2});
+                        });
+                        console.log(error)
+
+                    })
+                    .then((response) => {
+                        let res = response.data
+                        this.messageList.push({flag:1,message:res.reply,isImg:false})
+                    })
+                },
+                autoScroll:function(){
+                    this.$nextTick(function(){
+                        this.$refs.chat.scrollTop = this.$refs.chat.scrollHeight;
+                    })
+                    
+                },
+                show:function(){
+                    console.log("show")
+                    this.show_flag=!this.show_flag
+                },
+                msgtoback:function () {
+                    let data = new FormData()
+                    data.append('msg',this.inputMessage)
+                    let chatUrl = this.flask_url+'/'+this.dialog_mode
+                    console.log(chatUrl)
+                    axios.post(chatUrl, data, {timeout:10000})
+                        .catch((error) => {
+                        layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('网络开小差了', {icon: 2});
+                        });
+                        this.inputMessage=""
+                        console.log(error)
+                    })
+                    .then((response) => {
+                        let res = response.data
+                        this.messageList.push({flag:1,message:res.reply,isImg:false})
+                    })
+                },
+                changeMode:function () {
+                    console.log(this.dialog_mode)
+                    if(this.dialog_mode == "multi"){
+                        this.dialog_mode = "single"
+                        layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('切换为单轮对话模型', {icon: 1});
+                        });
+                    }else {
+                        this.dialog_mode = "multi"
+                        layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('切换为多轮对话模型', {icon: 1});
+                        });
+                    }
+                }
+            },
+            mounted:function(){
+                this.flask_url = 'http://127.0.0.1:5000'
+                this.dialog_mode = 'multi'
+                this.img_mode = 0
+            },
+            watch:{
+                'messageList':{
+                    handler:function (newVal, oldVal) {
+                        this.autoScroll()
+                    }
+                }
+            }
+        })
+    </script>
+    <script src="assets/autoload.js"></script>
+</body>
+</html>

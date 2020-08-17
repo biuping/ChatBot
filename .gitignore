@@ -37,6 +37,18 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# IDEA
+.idea
+
+# cache
+*/__pychche__
+
+# model data
+*/model
+*/data
+*/sample
+*/tensorboard_summary
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
