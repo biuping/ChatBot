@@ -16,7 +16,7 @@
 - 启动前端，可以在pycharm中直接启动
 - 启动app.py
 - 回车或点击左爪发送消息，点击右爪发送图片，点击左耳切换图片描述和图片描述注入对话模型两种模式，点击右耳切换多轮对话和单轮对话模式  
-![Alt 模型图](result/use.png)  
+![Alt 前端使用](/result/use.jpg)  
 ---
 
 ### 单轮对话  
@@ -24,7 +24,7 @@
 2. 利用pandas从xhj.csv中读入对话，第一列为问题，第二列为回答，分别将其分离到question和answer数组，并进行预处理，在每个句子前加上'start ',句子后加上' end'。xhj.csv已经用jieba分词处理过，但在预测时输入句子要进行jieba分词和预处理。
 3. 模型采用seq2seq，encoder和decoder采用GRU网络，利用BahdanauAttention实现注意力机制。将input注入encoder获得encoder-output和encoder-hidden（decoder-hidden），然后将['start']作为decoder第一个input，和decoder-hidden，encoder-output注入decoder，将encoder-output和decoder-hidden注入BahdanauAttention获得注意力权重和context-vector；把input嵌入到对应维度，与context-vector连接起来然后输入到GRU，最后通过Dense层输出output和decoder-hidden，利用output和target(目标，即回答)，此时decoder的input为target[:, t]，重复decoder操作。
 4. 预测：用jieba将句子分词后预处理，然后通过tokenizer获取编码，然后转化成张量。初始hidden为0矩阵，shape为[1, units]，同样以['start']作为第一个input注入decoder，获得output，取第一行最大值通过tokenizer转换为词，重复直到句子的最大length结束，将这些词拼起来即为回答句子。  
-![Alt 模型图](result/single_model.png)
+![Alt 模型图](/result/single_model.jpg)
 ---
 <center>蓝色部分为encoder，红色为decoder</center>
 
