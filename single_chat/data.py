@@ -8,8 +8,7 @@ def preprocess(sentence):
     return sentence
 
 
-def get_data(filepath='data/xhj.csv', maxlength=50000):
-    # df = pd.read_csv(filepath, sep='\t', header=None)
+def get_data(filepath='data/xhj.csv', maxlength=450000):
     df = pd.read_csv(filepath, encoding='utf-8')
     conversations = np.array(df)[:maxlength]
     questions = [preprocess(c[0]) for c in conversations]

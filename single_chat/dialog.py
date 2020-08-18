@@ -8,7 +8,7 @@ from data import get_data, preprocess
 import sys
 
 
-def generate_data(path='data/xhj.csv', sample_size=50000):
+def generate_data(path='data/xhj.csv', sample_size=450000):
     inputs, targets = get_data(path,sample_size)
     inp_tensor, inp_token = creat_tokenize(inputs)
     targ_tensor, targ_token = creat_tokenize(targets)
@@ -80,7 +80,7 @@ def train(hparams):
     dataset = tf.data.Dataset.from_tensor_slices((input_tensor, target_tensor)).shuffle(BUFFER_SIZE)
     dataset = dataset.batch(hparams.batch_size, drop_remainder=True)
     checkpoint_dir = hparams.ckpt_dir
-    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_last")
     start_time = time.time()
     epoch = 0
 
@@ -99,7 +99,9 @@ def train(hparams):
 
         print('训练总步数: {} 每步耗时: {}  最新每步耗时: {} 最新每步loss {:.4f}'.format(current_steps, step_time_total, step_time_epoch,
                                                                       step_loss.numpy()))
-        checkpoint.save(file_prefix=checkpoint_prefix)
+        if epoch == hparams.epoch:
+            checkpoint.save(file_prefix=checkpoint_prefix)
+        manager.save(checkpoint_number=epoch)
 
         sys.stdout.flush()
         epoch += 1
@@ -146,6 +148,7 @@ max_length_target = 20
 optimizer = tf.keras.optimizers.Adam()
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 checkpoint = tf.train.Checkpoint(optimizer=optimizer, encoder=encoder, decoder=decoder)
+manager = tf.train.CheckpointManager(checkpoint, directory=hparams.ckpt_dir, max_to_keep=3)
 currentpath = os.path.dirname(__file__)
 hparams.ckpt_dir = os.path.join(currentpath, hparams.ckpt_dir)
 hparams.data_path = os.path.join(currentpath, hparams.data_path)

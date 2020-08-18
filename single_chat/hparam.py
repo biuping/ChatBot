@@ -6,7 +6,7 @@ def generate_hparams():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--max_samples',
-        default=50000,
+        default=450000,
         type=int,
         help='maximum number of conversation pairs to use')
     parser.add_argument('--batch_size', default=128, type=int)
