@@ -24,7 +24,6 @@ def build_model(hparams):
     input1 = tf.keras.layers.Input(shape=(1000,))
     feature1 = tf.keras.layers.Dropout(0.5)(input1)
     feature2 = tf.keras.layers.Dense(256, activation='relu')(feature1)
-    # feature3 = tf.keras.layers.RepeatVector(hparams.max_length)(feature2)
 
     input2 = tf.keras.layers.Input(shape=(hparams.max_length,))
     embedding = tf.keras.layers.Embedding(hparams.vocab_size, 256, mask_zero=True)(input2)
@@ -32,8 +31,6 @@ def build_model(hparams):
     lstm = tf.keras.layers.LSTM(256)(se2)
 
     decoder1 = tf.keras.layers.concatenate([feature2, lstm])
-    # lstm = tf.keras.layers.LSTM(500, return_sequences=False)(merged)
-    # outputs = tf.keras.layers.Dense(hparams.vocab_size, activation='softmax')(lstm)
     decoder2 = tf.keras.layers.Dense(256, activation='relu')(decoder1)
     outputs = tf.keras.layers.Dense(hparams.vocab_size, activation='softmax')(decoder2)
 
@@ -52,7 +49,6 @@ def data_generator(descriptions, pictures, tokenizer, hparams):
         for img_id, des_list in descriptions.items():
             picture = pictures[img_id][0]
             img_input, seq_input, word_out = generate_seq(tokenizer, des_list, picture, hparams)
-            # back = [[img_input, seq_input], word_out]
             yield ([img_input, seq_input], word_out)
 
 
