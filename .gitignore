@@ -50,6 +50,7 @@ pip-delete-this-directory.txt
 */tensorboard_summary
 */mmi_model
 */layui
+*/js
 
 # Unit test / coverage reports
 htmlcov/
