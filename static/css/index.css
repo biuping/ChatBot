@@ -180,8 +180,23 @@ html,body{
     left: 2%;
     opacity: 60%;
     cursor: pointer;
-    /* background-color: transparent; */
 }
 .showBtn:hover{
+    opacity: 100%;
+}
+.mmiChangeBtn{
+    position: absolute;
+    top: 12%;
+    left: 2%;
+    opacity: 60%;
+    cursor: pointer;
+}
+.mmi{
+    color: #67b2d4;
+}
+.dia{
+    color: #e75d5f;
+}
+.mmiChangeBtn:hover{
     opacity: 100%;
 }

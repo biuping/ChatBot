@@ -48,6 +48,11 @@ def get_train_hparams():
     parser.add_argument('--writer_dir', default='tensorboard_summary/', type=str, required=False, help='Tensorboard路径')
     parser.add_argument('--seed', type=int, default=None, help='设置种子用于生成随机数，以使得训练的结果是确定的')
     parser.add_argument('--num_workers', type=int, default=1, help="dataloader加载数据时使用的线程数量")
+    parser.add_argument('--train_mmi', action='store_true', help="若指定该参数，则训练DialogGPT的MMI模型")
+    parser.add_argument('--train_mmi_tokenized_path', default='data/train_mmi_tokenized.txt', type=str,
+                        required=False,
+                        help='将原始训练语料的每段对话翻转，然后进行tokenize之后的数据的存放位置，用于训练MMI模型')
+    parser.add_argument('--mmi_model_output_path', default='mmi_model', type=str, required=False, help='MMI模型保存路径')
     return parser.parse_args()
 
 
@@ -131,6 +136,43 @@ def preprocess_raw_data(hparams, tokenizer, n_ctx):
             for id in dialog_ids:
                 f.write(str(id) + ' ')
             if dialog_index < len(train_data) - 1:
+                f.write("\n")
+    logger.info("finish preprocessing raw data,the result is stored in {}".format(hparams.train_tokenized_path))
+
+
+def preprocess_mmi_raw_data(hparams, tokenizer, n_ctx):
+    """
+    对原始语料进行处理，将原始语料的每段对话进行翻转，然后转换为用于train MMI模型的token id，对于每个dialogue，将其处于成如下形式"[CLS]utterance N[SEP]utterance N-1[SEP]utterance N-2[SEP]"
+    :param hparams:
+    :param tokenizer:
+    :param n_ctx:GPT2模型的上下文窗口大小,对于超过n_ctx(n_ctx包括了特殊字符)的dialogue进行截断
+    :return:
+    """
+    logger.info("tokenizing MMI raw data,raw data path:{}, token output path:{}".format(hparams.train_raw_path,
+                                                                                        hparams.train_mmi_tokenized_path))
+    with open(hparams.train_raw_path, 'rb') as f:
+        data = f.read().decode("utf-8")
+    if "\r\n" in data:
+        train_data = data.split("\r\n\r\n")
+    else:
+        train_data = data.split("\n\n")
+    logger.info("there are {} dialogue in raw dataset".format(len(train_data)))
+    with open(hparams.train_mmi_tokenized_path, "w", encoding="utf-8") as f:
+        for dialogue_index, dialogue in enumerate(tqdm(train_data)):
+            if "\r\n" in data:
+                utterances = dialogue.split("\r\n")
+            else:
+                utterances = dialogue.split("\n")
+            dialogue_ids = [tokenizer.cls_token_id]  # 每个dialogue以[CLS]开头
+            for utterance in reversed(utterances):  # 将一段对话进行翻转
+                dialogue_ids.extend([tokenizer.convert_tokens_to_ids(word) for word in utterance])
+                dialogue_ids.append(tokenizer.sep_token_id)  # 每个utterance之后添加[SEP]，表示utterance结束
+            # 对超过n_ctx的长度进行截断,否则GPT2模型会报错
+            dialogue_ids = dialogue_ids[:n_ctx]
+            for dialogue_id in dialogue_ids:
+                f.write(str(dialogue_id) + ' ')
+            # 最后一条记录不添加换行符
+            if dialogue_index < len(train_data) - 1:
                 f.write("\n")
     logger.info("finish preprocessing raw data,the result is stored in {}".format(hparams.train_tokenized_path))
 
@@ -302,8 +344,12 @@ def main():
     model, n_ctx = create_model(hparams, vocab_size)
     model.to(device)
 
-    if not os.path.exists(hparams.train_tokenized_path):
-        preprocess_raw_data(hparams, tokenizer, n_ctx)
+    if hparams.raw and hparams.train_mmi:  # 如果当前是要训练MMI模型
+        if not os.path.exists(hparams.train_mmi_tokenized_path):
+            preprocess_mmi_raw_data(hparams, tokenizer, n_ctx)
+    elif hparams.raw and not hparams.train_mmi:  # 如果当前是要训练对话生成模型
+        if not os.path.exists(hparams.train_tokenized_path):
+            preprocess_raw_data(hparams, tokenizer, n_ctx)
 
     multi_gpu = False  # 不使用多块gpu
     if hparams.cuda and torch.cuda.device_count() > 1:
@@ -318,8 +364,12 @@ def main():
 
     # load dataset
     logger.info("loading traing data")
-    with open(hparams.train_tokenized_path, "r", encoding="utf-8") as f:
-        data = f.read()
+    if hparams.train_mmi:  # 如果是训练MMI模型
+        with open(hparams.train_mmi_tokenized_path, "r", encoding="utf8") as f:
+            data = f.read()
+    else:  # 如果是训练对话生成模型
+        with open(hparams.train_tokenized_path, "r", encoding="utf8") as f:
+            data = f.read()
     data_list = data.split("\n")
     train_list, test_list = train_test_split(data_list, test_size=0.2, random_state=1)
 

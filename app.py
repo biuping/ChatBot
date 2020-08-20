@@ -7,6 +7,7 @@ import os
 from see_speak import see_evaluate
 import jieba
 from wsgiref.simple_server import make_server
+import gpt_2.predict_mmi as predictor_mmi
 import gpt_2.predict as predictor
 
 
@@ -38,8 +39,13 @@ def reply():
 @app.route('/multi', methods=['post'])
 def multi_reply():
     msg = request.form['msg']
-    reply_gpt, history_re = predictor.predict(msg, history)
-    history.extend(history_re)
+    type = int(request.form['type'])
+    if type == 0:
+        reply_gpt, history_re = predictor.predict(msg, history)
+        history.extend(history_re)
+    else:
+        reply_gpt, history_re = predictor_mmi.predict(msg, history)
+        history.extend(history_re)
     return jsonify({'reply': reply_gpt})
 
 
@@ -73,3 +79,4 @@ if __name__ == '__main__':
     server = make_server('127.0.0.1', 5000, app)
     server.serve_forever()
     app.run(host='0.0.0.0',port=5000)
+    print('server start')

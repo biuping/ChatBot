@@ -19,6 +19,9 @@
         <span class="layui-icon layui-icon-app showBtn" 
         style="font-size: 50px; color: rgb(253, 253, 253);" title="展开"
         @click="show"></span>
+        <span class="layui-icon layui-icon-dialogue mmiChangeBtn"
+        style="font-size: 50px;" title="mmi_dialog和dialog模型切换"
+        @click="changeMultiModel" v-if="this.dialog_mode" :class="isMMI ? mmi : dialog"></span>
         <transition enter-active-class="layui-anim-scale" leave-active-class="layui-anim-fadeout" :duration="{enter:400, leave:200}">
         <div class="main layui-anim "  v-show="show_flag">
             <input type="image" src="img/left.png" class="leftear" title="切换图片注入对话或图片描述" @click="imgModeChange">
@@ -51,13 +54,16 @@
             data:{
                 inputMessage:"",
                 show_flag:true,
+                flask_url:'http://127.0.0.1:5000',
+                mmi:'mmi',
+                dialog:'dia',
+                dialog_mode:true,  //true:multi模型，false：single
+                isMMI:false,  //true:dialog模型，false：mmi_dialog
+                img_mode: 0,  //0:图片描述，1:图片注入对话模型
                 messageList:[{
                     flag:1,
                     message:"和我说说话嘛 QwQ",
                     isImg:false,
-                    flask_url:'',
-                    dialog_mode:'',
-                    img_mode: 0  //0:图片描述，1:图片注入对话模型
                 }]
             },
             methods:{
@@ -159,11 +165,21 @@
                     this.show_flag=!this.show_flag
                 },
                 msgtoback:function () {
+                    let dialogMode = 'multi'
                     let data = new FormData()
                     data.append('msg',this.inputMessage)
-                    let chatUrl = this.flask_url+'/'+this.dialog_mode
+                    if(!this.dialog_mode){
+                        dialogMode = 'single'
+                    }else {
+                        if (this.isMMI){
+                            data.append('type', 1)   // 1表示用mmi_model
+                        }else {
+                            data.append('type', 0)
+                        }
+                    }
+                    let chatUrl = this.flask_url+'/'+dialogMode
                     console.log(chatUrl)
-                    axios.post(chatUrl, data, {timeout:10000})
+                    axios.post(chatUrl, data, {timeout:100000})
                         .catch((error) => {
                         layui.use('layer', function(){
                             let layer = layui.layer;
@@ -178,26 +194,35 @@
                     })
                 },
                 changeMode:function () {
-                    console.log(this.dialog_mode)
-                    if(this.dialog_mode == "multi"){
-                        this.dialog_mode = "single"
+                    if(this.dialog_mode){
+                        this.dialog_mode = false
                         layui.use('layer', function(){
                             let layer = layui.layer;
                             layer.alert('切换为单轮对话模型', {icon: 1});
                         });
                     }else {
-                        this.dialog_mode = "multi"
+                        this.dialog_mode = true
                         layui.use('layer', function(){
                             let layer = layui.layer;
                             layer.alert('切换为多轮对话模型', {icon: 1});
                         });
                     }
+                },
+                            changeMultiModel:function(){
+                if (this.isMMI){
+                    this.isMMI = false
+                    layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('切换为dialog对话模型', {icon: 1});
+                        });
+                }else {
+                    this.isMMI = true
+                    layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('切换为mmi_dialog对话模型', {icon: 1});
+                        });
                 }
             },
-            mounted:function(){
-                this.flask_url = 'http://127.0.0.1:5000'
-                this.dialog_mode = 'multi'
-                this.img_mode = 0
             },
             watch:{
                 'messageList':{

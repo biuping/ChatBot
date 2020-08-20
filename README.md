@@ -11,7 +11,13 @@
     - pandas==0.23.4
     - torchvision==0.5.0
     - transformers==2.1.1  
-
+- js文件  
+    js和layui包放于/static目录下，layui可以到[官网](https://www.layui.com/)下载，详细目录结构参见文件目录  
+    |  | | |
+    |---|---|---|
+    | js  |  [百度网盘:js](https://pan.baidu.com/s/1yXNrU-WmzDJ2mh7X0gna7Q)  | 提取码：c8ha  |
+    | layui包 |  [百度网盘:layui](https://pan.baidu.com/s/1kGrqfHoD9wJQ3R2WNG-CCg)  | 提取码：ts1k  |
+---
 ### 使用
 - 启动前端，可以在pycharm中直接启动
 - 启动app.py
@@ -73,6 +79,57 @@
     | 数据集  |  [百度网盘:数据集](https://pan.baidu.com/s/1UOt0jDSE1hCrqEkaXWmZzQ)  | 提取码：jjbb  |
     | 模型 |  [百度网盘:模型](https://pan.baidu.com/s/1baZaCYUqw8acQDqry8QdcA)  | 提取码：oelm  |
  
+### GPT-2 多轮对话  
+- 数据处理：基础数据集为50w的多轮闲聊数据集，在每一轮对话前加上[CLS]，在每个单对话后面加上[SEP]，之后利用BertTokenizer编码存到tokenizer.txt中。  
+    ```
+    // 原始语料
+    加油，三月动起来，五月笑起来
+    正解你为什么就那么厉害呢
+    哈哈，没办法，智商就是这么高
+    你这是要开始得瑟了吗！好啦！你最厉害！
+    哈哈哈哈
+
+    // 加入分割标志
+    [CLS]加油，三月动起来，五月笑起来[SEP]
+    正解你为什么就那么厉害呢[SEP]
+    哈哈，没办法，智商就是这么高[SEP]
+    你这是要开始得瑟了吗！好啦！你最厉害！[SEP]
+    哈哈哈哈[SEP]
+    
+    // 通过BertTokenizer编码 101:[CLS] 102:[SEP]
+    101 1217 3779 8024 676 3299 1220 6629 3341 8024 758 3299 5010 6629 3341 102 3633 6237 872 711 784 720 2218 6929 720 1326 2154 1450 102 1506 1506 8024 3766 1215 3791 8024 3255 1555 2218 3221 6821 720 7770 102 872 6821 3221 6206 2458 1993 2533 4449 749 1408 8013 1962 1568 8013 872 3297 1326 2154 8013 102 1506 1506 1506 1506 102 
+    ```
+
+- 训练：**run gpt_train.py --raw** 利用原始语料进行tokenizer然后训练模型，**run gpt_train.py --train_mmi** 训练MMI模型，指定超参数中**pretrained_model**表示在已有的模型进行训练，默认为空。 
+- 预测：**predict.py中predict.py** 使用对话模型，**predict_mmi.py中predict.py** 使用MMI模型进行预测。history存储历史对话，默认存储最近5轮对话，可以在超参数中修改。
+- MMI Model：MMI Model也是一个基于GPT2的生成模型，将每条训练数据进行"逆序"拼接,然后输入到网络中。该模型主要用于计算Dialogue Model生成的所有候选response相对于dialogue history的loss。训练时，将训练语料逆序拼接，同样通过BertTokenizer编码，作为MMI的输入进行训练。
+    ```
+    // 基础语料
+    加油，三月动起来，五月笑起来
+    正解你为什么就那么厉害呢
+    哈哈，没办法，智商就是这么高
+    你这是要开始得瑟了吗！好啦！你最厉害！
+    哈哈哈哈
+
+    // 逆序拼接
+    [CLS]哈哈哈哈[SEP]
+    你这是要开始得瑟了吗！好啦！你最厉害！[SEP]
+    哈哈，没办法，智商就是这么高[SEP]
+    正解你为什么就那么厉害呢[SEP]
+    加油，三月动起来，五月笑起来[SEP]
+    ```
+- MMI response生成：
+  - 假设当前history=["你好","你好呀","你在干什么？"]
+  - 使用Dialog Model根据history生成n个候选response:["在看电视","我在上课啊","人家在想你啊","你猜"]
+  - 使用MMI Model将每个候选response分别与history进行逆序拼接，如 "[CLS]在看电视[SEP]你在干什么[SEP]你好呀[SEP]你好[SEP]"
+  - 输入到MMI Model中计算loss，选取loss最小的response作为最终回复  
+
+ - 
+      |  | | |
+    |---|---|---|
+    | 数据集  |  [百度网盘:50w闲聊数据集](https://pan.baidu.com/s/1eM8GAFIBGiZSs5QFKUiTMA)  | 提取码：y4ft  |
+    | 模型 |  [百度网盘:dialog模型](https://pan.baidu.com/s/13P1NmDc8T8ep5UG-rBHOrQ)  | 提取码：wfwg  |
+    | 模型 |  [百度网盘:MMI模型](https://pan.baidu.com/s/19rUmEq3dOwBFQg6JRwfZTw)  | 提取码：hnwd  |
 
 ### 文件目录  
 ```
@@ -84,6 +141,7 @@
 │  │  dataset.py
 │  │  gpt_train.py
 │  │  predict.py
+│  │  predict_mmi.py
 │  │  
 │  ├─config
 │  │      model_config_dialogue_small.json
@@ -97,7 +155,11 @@
 │  ├─model
 │  │      config.json
 │  │      pytorch_model.bin
-│  │      
+│  │
+│  ├─mmi_model
+│  │      config.json
+│  │      pytorch_model.bin
+│  │
 │  ├─sample
 │  │      samples.txt
 │  │      
