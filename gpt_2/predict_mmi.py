@@ -159,6 +159,7 @@ def predict(sentence, history):
             best_response = response
             min_loss = loss
     history.append(best_response)
+    history = history[-hparams.max_history_len:]
     text = tokenizer.convert_ids_to_tokens(best_response)
     reply = "".join(text)
     return reply, history

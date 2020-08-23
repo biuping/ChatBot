@@ -89,6 +89,19 @@
                     }
                     
                 },
+                beforeunloadFn:function(e){
+                    console.log('刷新或关闭')
+                    let furl = this.flask_url + '/flush'
+                    axios.post(furl, '', {timeout:5000})
+                        .catch((error) => {
+                        layui.use('layer', function(){
+                            let layer = layui.layer;
+                            layer.alert('网络开小差了', {icon: 2});
+                        });
+                        console.log(error)
+
+                    })
+                },
                 sendImg:function(){
                     this.$refs.openfile.dispatchEvent(new MouseEvent('click'))
                 },
@@ -224,12 +237,18 @@
                 }
             },
             },
+            created(){
+              window.addEventListener('beforeunload', e => this.beforeunloadFn(e))
+            },
             watch:{
                 'messageList':{
                     handler:function (newVal, oldVal) {
                         this.autoScroll()
                     }
                 }
+            },
+            destroyed(){
+                window.addEventListener('beforeunload', e => this.beforeunloadFn(e))
             }
         })
     </script>

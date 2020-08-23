@@ -29,11 +29,16 @@
 1. 采用小黄鸡作为对话语料，总共450000对话数据，不过有部分噪音和特殊符号
 2. 利用pandas从xhj.csv中读入对话，第一列为问题，第二列为回答，分别将其分离到question和answer数组，并进行预处理，在每个句子前加上'start ',句子后加上' end'。xhj.csv已经用jieba分词处理过，但在预测时输入句子要进行jieba分词和预处理。
 3. 模型采用seq2seq，encoder和decoder采用GRU网络，利用BahdanauAttention实现注意力机制。将input注入encoder获得encoder-output和encoder-hidden（decoder-hidden），然后将['start']作为decoder第一个input，和decoder-hidden，encoder-output注入decoder，将encoder-output和decoder-hidden注入BahdanauAttention获得注意力权重和context-vector；把input嵌入到对应维度，与context-vector连接起来然后输入到GRU，最后通过Dense层输出output和decoder-hidden，利用output和target(目标，即回答)，此时decoder的input为target[:, t]，重复decoder操作。
-4. 预测：用jieba将句子分词后预处理，然后通过tokenizer获取编码，然后转化成张量。初始hidden为0矩阵，shape为[1, units]，同样以['start']作为第一个input注入decoder，获得output，取第一行最大值通过tokenizer转换为词，重复直到句子的最大length结束，将这些词拼起来即为回答句子。
+4. 预测：用jieba将句子分词后预处理，然后通过tokenizer获取编码，然后转化成张量。初始hidden为0矩阵，shape为[1, units]，同样以['start']作为第一个input注入decoder，获得output，取第一行最大值，通过tokenizer转换为词，重复直到句子的最大length结束，将这些词拼起来即为回答句子。
 5. **运行dialog.py中train()开始训练，运行predict(sentence)调用模型进行预测。**  
 ![Alt 模型图](result/single_model.jpg)
 ---
-<center>蓝色部分为encoder，红色为decoder</center>
+<center>蓝色部分为encoder，红色为decoder</center>  
+
+- |  | | |
+    |---|---|---|
+    | 模型  |  [百度网盘:model](https://pan.baidu.com/s/1PU5DXd2dpmn3hg5HwzGSlw)  | 提取码：d3i2  |
+    | 数据集 |  [百度网盘:xhj](https://pan.baidu.com/s/1zodBfiw_wY9ZkWdSBOQZzA)  | 提取码：yf11  |
 
 ### 看图说话  
 - **运行preprocess_img.py提取图片特征** 使用的是VGG16模型，提取后的特征存入features.pkl中。  
@@ -67,8 +72,8 @@
     | start 一个  | 女孩  | 女孩  |
     | start 一个 女孩 | 走进  | 走进  |
     | start 一个 女孩 走进  |  一个 | 一个 |
-    | start 一个 女孩 走进  |  木结构 | 木结构 |
-    | start 一个 女孩 走进 木结构 |  end | end |  
+    | start 一个 女孩 走进 一个 |  木结构 | 木结构 |
+    | start 一个 女孩 走进 一个 木结构 |  end | end |  
  
 ![Alt 看图说话模型](result/see_model.jpg)
 ---  
@@ -130,6 +135,17 @@
     | 数据集  |  [百度网盘:50w闲聊数据集](https://pan.baidu.com/s/1eM8GAFIBGiZSs5QFKUiTMA)  | 提取码：y4ft  |
     | 模型 |  [百度网盘:dialog模型](https://pan.baidu.com/s/13P1NmDc8T8ep5UG-rBHOrQ)  | 提取码：wfwg  |
     | 模型 |  [百度网盘:MMI模型](https://pan.baidu.com/s/19rUmEq3dOwBFQg6JRwfZTw)  | 提取码：hnwd  |
+
+### 效果展示  
+![Alt chat](result/result.jpg)
+
+### 参考资料  
+- https://github.com/bixiuping1999/tf2-transformer-chatbot  
+- https://github.com/bixiuping1999/GPT2-chitchat
+- https://github.com/LeeWise9/Image_Captioning
+- 《The Design and Implementation of XiaoIce, an Empathetic Social Chatbot》
+- 《DIALOGPT: Large-Scale Generative Pre-training for Conversational Response Generation》
+- 《Language Models are Few-Shot Learners》
 
 ### 文件目录  
 ```

@@ -23,11 +23,19 @@ timer.start()
 app = Flask(__name__, static_url_path="/static")
 CORS(app, supports_credentials=True)
 
-history = []
+history = list()
+
+
+@app.route('/flush', methods=['post'])
+def reply_flush():
+    global history
+    history = []
+    return jsonify({'reply': 'success'})
 
 
 @app.route('/single', methods=['post'])
 def reply():
+    global history
     history = []
     msg = request.form['msg']
     msg = " ".join(jieba.cut(msg))
@@ -38,19 +46,24 @@ def reply():
 
 @app.route('/multi', methods=['post'])
 def multi_reply():
+    global history
     msg = request.form['msg']
     type = int(request.form['type'])
     if type == 0:
-        reply_gpt, history_re = predictor.predict(msg, history)
-        history.extend(history_re)
+        reply_gpt, history = predictor.predict(msg, history)
     else:
-        reply_gpt, history_re = predictor_mmi.predict(msg, history)
-        history.extend(history_re)
+        reply_gpt, history = predictor_mmi.predict(msg, history)
+    # if len(history) > 20:
+    #     history = history[-12:]
+    #     print(history)
+    print(history)
+    print(len(history))
     return jsonify({'reply': reply_gpt})
 
 
 @app.route('/img', methods=['post'])
 def img_reply():
+    global history
     img = request.files['img']
     print(img)
     img_name = request.form['name']
@@ -66,14 +79,14 @@ def img_reply():
         except Exception as e:
             print(e)
     if int(mode) == 1:
-        description, history_re = predictor.predict(description, history)
-        history.extend(history_re)
+        description, history = predictor.predict(description, history)
     return jsonify({'reply': description})
 
 
 @app.route("/")
 def index():
     return render_template("static/index.html")
+
 
 if __name__ == '__main__':
     server = make_server('127.0.0.1', 5000, app)

@@ -109,6 +109,7 @@ def predict(sentence, history):
         generated.append(next_token.item())
         curr_input_tensor = torch.cat((curr_input_tensor, next_token), dim=0)
     history.append(generated)
+    history = history[-hparams.max_history_len:]
     text = tokenizer.convert_ids_to_tokens(generated)
     reply = "".join(text)
     return reply, history

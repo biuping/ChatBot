@@ -99,9 +99,10 @@ def train(hparams):
 
         print('训练总步数: {} 每步耗时: {}  最新每步耗时: {} 最新每步loss {:.4f}'.format(current_steps, step_time_total, step_time_epoch,
                                                                       step_loss.numpy()))
-        if epoch == hparams.epoch:
+        if epoch == hparams.epoch-1:
             checkpoint.save(file_prefix=checkpoint_prefix)
-        manager.save(checkpoint_number=epoch)
+        else:
+            manager.save(checkpoint_number=epoch)
 
         sys.stdout.flush()
         epoch += 1
