@@ -83,6 +83,7 @@
     |---|---|---|
     | 数据集  |  [百度网盘:数据集](https://pan.baidu.com/s/1UOt0jDSE1hCrqEkaXWmZzQ)  | 提取码：jjbb  |
     | 模型 |  [百度网盘:模型](https://pan.baidu.com/s/1baZaCYUqw8acQDqry8QdcA)  | 提取码：oelm  |
+    | Flickr_8k |  [百度网盘:图片](https://pan.baidu.com/s/11xjKSV8ykBko2IBgWFPLKg)  | 提取码：gluv  |
  
 ### GPT-2 多轮对话  
 - 数据处理：基础数据集为50w的多轮闲聊数据集，在每一轮对话前加上[CLS]，在每个单对话后面加上[SEP]，之后利用BertTokenizer编码存到tokenizer.txt中。  
