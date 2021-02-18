@@ -82,7 +82,7 @@
     |  | | |
     |---|---|---|
     | 数据集  |  [百度网盘:数据集](https://pan.baidu.com/s/1UOt0jDSE1hCrqEkaXWmZzQ)  | 提取码：jjbb  |
-    | 模型 |  [百度网盘:模型](https://pan.baidu.com/s/1baZaCYUqw8acQDqry8QdcA)  | 提取码：oelm  |
+    | 模型 |  [百度网盘:模型](https://pan.baidu.com/s/1baZaCYUqw8acQDqry8QdcA)  | 提取码：oe1m  |
     | Flickr_8k |  [百度网盘:图片](https://pan.baidu.com/s/11xjKSV8ykBko2IBgWFPLKg)  | 提取码：gluv  |
  
 ### GPT-2 多轮对话  
